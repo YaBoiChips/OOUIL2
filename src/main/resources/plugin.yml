@@ -1,0 +1,17 @@
+name: OOUIL2
+version: '1.0'
+main: yaboichips.oOUIL2.OOUIL2
+api-version: '1.21'
+commands:
+  start:
+    description: starts the session
+    usage: /<command>
+  vote:
+    description: vote on what role a player has
+    usage: /<command> <player> <role>
+  save:
+    description: if the saved player dies they do not lose a life
+    usage: /<command> <player>
+  watch:
+    description: you can go into someone else’s POV for 15 seconds
+    usage: /<command> <player>
