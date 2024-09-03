@@ -1,5 +1,7 @@
 package yaboichips.oOUIL2;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,10 +17,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
-import yaboichips.oOUIL2.commands.SaveCommand;
-import yaboichips.oOUIL2.commands.StartCommand;
-import yaboichips.oOUIL2.commands.VoteCommand;
-import yaboichips.oOUIL2.commands.WatchCommand;
+import yaboichips.oOUIL2.commands.*;
 import yaboichips.oOUIL2.roles.Role;
 
 import java.util.*;
@@ -37,7 +36,12 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
         this.getCommand("vote").setExecutor(new VoteCommand());
         this.getCommand("save").setExecutor(new SaveCommand());
         this.getCommand("watch").setExecutor(new WatchCommand());
-
+        this.getCommand("end").setExecutor(new EndCommand());
+        this.getCommand("swap").setExecutor(new SwapCommand());
+        this.getCommand("scan").setExecutor(new ScanCommand());
+        this.getCommand("transplant").setExecutor(new TransplantCommand());
+        this.getCommand("checklives").setExecutor(new CheckLivesCommand());
+        this.getCommand("gift").setExecutor(new GiftCommand());
 
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         if (manager != null) {
@@ -56,6 +60,10 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
                 Objective roleObjective = scoreboard.getObjective("role");
                 if (roleObjective == null) {
                     roleObjective = scoreboard.registerNewObjective("role", "dummy", "Role");
+                }
+                Objective target = scoreboard.getObjective("target");
+                if (target == null) {
+                    target = scoreboard.registerNewObjective("target", "dummy", "Target");
                 }
             }
         }
@@ -106,6 +114,16 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
                     if (OOUIL2.getRole(playerz) == Role.ACCOMPLICE) {
                         usedRoleObjective.getScore(playerz.getName()).setScore(0);
                     }
+                }
+            }
+        }
+        if (OOUIL2.getRole(player) == Role.ASSASSIN) {
+            Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
+            if (usedRoleObjective == null) {
+                usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
+            } else {
+                if (killed == StartCommand.target) {
+                    usedRoleObjective.getScore(player.getName()).setScore(0);
                 }
             }
         }
@@ -187,12 +205,13 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
     public void onPlayerHit(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player damager && event.getEntity() instanceof Player target) {
             ItemStack weapon = damager.getInventory().getItemInMainHand();
-
-            if (weapon.getType() == Material.IRON_SWORD) {
-                ItemMeta meta = weapon.getItemMeta();
-                if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals("Espur Blade")) {
-                    scheduleDeath(target);
-                    damager.getInventory().remove(weapon);
+            if (getRole(damager) == Role.ESPUR) {
+                if (weapon.getType() == Material.IRON_SWORD) {
+                    ItemMeta meta = weapon.getItemMeta();
+                    if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals("Espur Blade")) {
+                        scheduleDeath(target);
+                        damager.getInventory().remove(weapon);
+                    }
                 }
             }
         }

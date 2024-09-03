@@ -15,3 +15,21 @@ commands:
   watch:
     description: you can go into someone else’s POV for 15 seconds
     usage: /<command> <player>
+  end:
+    description: ends the session
+    usage: /<command>
+  swap:
+    description: swaps 2 players
+    usage: /<command> <player> <player>
+  scan:
+    description: scan a player for there role
+    usage: /<command> <player>
+  transplant:
+    description: transfers a life between players
+    usage: /<command> <player> <player>
+  checklives:
+    description: shows you the amount of lives you have
+    usage: /<command>
+  gift:
+    description: gifts a life to someone
+    usage: /<command> <player>

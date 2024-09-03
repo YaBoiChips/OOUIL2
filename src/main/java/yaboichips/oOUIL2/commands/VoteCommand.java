@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-import yaboichips.oOUIL2.OOUIL2;
 import yaboichips.oOUIL2.roles.Role;
 
 import java.util.ArrayList;
@@ -17,12 +16,13 @@ import java.util.Collections;
 import java.util.List;
 
 import static yaboichips.oOUIL2.OOUIL2.getRole;
+import static yaboichips.oOUIL2.roles.Role.JESTER;
 
 public class VoteCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        for (Player player : commandSender.getServer().getOnlinePlayers()){
-            if (getRole(player) == Role.JURY){
+        for (Player player : commandSender.getServer().getOnlinePlayers()) {
+            if (getRole(player) == Role.JURY) {
                 player.sendMessage(commandSender.getName() + " voted for " + strings[0] + " as the " + strings[1]);
             }
         }
@@ -38,7 +38,30 @@ public class VoteCommand implements CommandExecutor {
             if (votes.getScore() > 0) {
                 votes.setScore(votes.getScore() - 1);
                 if (votedRole == playerRole) {
-                    voted.damage(50);
+                    Objective voteCountObjective = scoreboard.getObjective("votecount");
+                    if (voteCountObjective == null) {
+                        voteCountObjective = scoreboard.registerNewObjective("votecount", "dummy", "VoteCount");
+                    } else {
+                        Score voteCount = voteCountObjective.getScore(voted);
+                        voteCount.setScore(voteCount.getScore() + 1);
+                    }
+                    if (voteCountObjective.getScore(voted.getName()).getScore() > 2) {
+                        voted.setHealth(0);
+                        voteCountObjective.getScore(voted.getName()).setScore(0);
+                    }
+                } else if (getRole(voted) == JESTER) {
+                    Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
+                    if (usedRoleObjective == null) {
+                        usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
+                    } else {
+                        if (votedRole != JESTER) {
+                            Score used = usedRoleObjective.getScore(voted.getName());
+                            if (used.getScore() > 0) {
+                                used.setScore(used.getScore() - 1);
+                                voted.sendMessage("You got a vote!");
+                            }
+                        }
+                    }
                 }
             } else {
                 commandSender.sendMessage("You are out of votes for today!");

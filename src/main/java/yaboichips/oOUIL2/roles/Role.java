@@ -14,20 +14,21 @@ public class Role {
     public static Role TRAP;
 
     //neutral
-    public static Role LOVER1;
-    public static Role LOVER2;
+    public static Role SWAPPER;
     public static Role JURY;
     public static Role NURSE;
     public static Role WATCHER;
     public static Role BODYGUARD;
 
     //bad
-    public static Role PLAGUE;
+    public static Role TESTIFICATE;
     public static Role ESPUR;
     public static Role ACCOMPLICE;
     public static Role LIAR;
     public static Role JESTER;
     public static Role ASSASSIN;
+
+    public static Role ANGEL;
 
     public static List<Role> roles = new ArrayList<>();
     public Role(int value, String name) {
@@ -42,17 +43,17 @@ public class Role {
         SEER = createRole(3, "Seer");
         DETECTIVE = createRole(4, "Detective");
         TRAP = createRole(5, "Trap");
+        ANGEL = createRole(18, "Angel");
 
         //neutral
-        LOVER1 = createRole(6, "Lover");
-        LOVER2 = createRole(7, "Lover");
+        SWAPPER = createRole(7, "Swapper");
         JURY = createRole(8, "Jury");
         NURSE = createRole(9, "Nurse");
         WATCHER = createRole(10, "Watcher");
         BODYGUARD = createRole(11, "Bodyguard");
 
         //bad
-        PLAGUE = createRole(12, "Plague Doctor");
+        TESTIFICATE = createRole(12, "Testificate");
         ESPUR = createRole(13, "Espur");
         ACCOMPLICE = createRole(14, "Accomplice");
         LIAR = createRole(15, "Liar");
