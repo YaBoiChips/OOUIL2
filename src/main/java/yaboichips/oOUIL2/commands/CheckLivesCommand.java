@@ -15,9 +15,9 @@ import org.bukkit.scoreboard.Scoreboard;
 public class CheckLivesCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-        Objective livesObjective = scoreboard.getObjective("lives");
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        if (commandSender instanceof Player player) {
+            Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+            Objective livesObjective = scoreboard.getObjective("lives");
             int lives = livesObjective.getScore(player.getName()).getScore();
             displayActionBar(player, ChatColor.RED + "Lives: " + lives);
             player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BELL, 1, 2);

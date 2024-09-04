@@ -21,7 +21,7 @@ public class EndCommand implements CommandExecutor {
                 Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
                 if (usedRoleObjective == null) {
                     usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else if (usedRoleObjective.getScore(player.getName()).getScore() == 1) {
+                } else if (usedRoleObjective.getScore(player.getName()).getScore() > 0) {
                     player.setHealth(0);
                     for (Player playerz : onlinePlayers) {
                         if (OOUIL2.getRole(playerz) == Role.ACCOMPLICE) {
@@ -29,20 +29,25 @@ public class EndCommand implements CommandExecutor {
                         }
                     }
                 }
-            }
-            if (OOUIL2.getRole(player) == Role.ASSASSIN) {
+            } else if (OOUIL2.getRole(player) == Role.ASSASSIN) {
                 Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
                 if (usedRoleObjective == null) {
                     usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else if (usedRoleObjective.getScore(player.getName()).getScore() == 1) {
+                } else if (usedRoleObjective.getScore(player.getName()).getScore() > 0) {
                     player.setHealth(0);
                 }
-            }
-            if (OOUIL2.getRole(player) == Role.JESTER) {
+            } else if (OOUIL2.getRole(player) == Role.JESTER) {
                 Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
                 if (usedRoleObjective == null) {
                     usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else if (usedRoleObjective.getScore(player.getName()).getScore() == 1) {
+                } else if (usedRoleObjective.getScore(player.getName()).getScore() > 0) {
+                    player.setHealth(0);
+                }
+            } else if (OOUIL2.getRole(player) == Role.ESPUR) {
+                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
+                if (usedRoleObjective == null) {
+                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
+                } else if (usedRoleObjective.getScore(player.getName()).getScore() > 0) {
                     player.setHealth(0);
                 }
             }

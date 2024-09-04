@@ -42,6 +42,8 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
         this.getCommand("transplant").setExecutor(new TransplantCommand());
         this.getCommand("checklives").setExecutor(new CheckLivesCommand());
         this.getCommand("gift").setExecutor(new GiftCommand());
+        this.getCommand("task").setTabCompleter(new TaskTabCompleter());
+        this.getCommand("task").setExecutor(new TaskCommand());
 
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         if (manager != null) {
@@ -211,6 +213,12 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
                     if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals("Espur Blade")) {
                         scheduleDeath(target);
                         damager.getInventory().remove(weapon);
+                        Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
+                        if (usedRoleObjective == null) {
+                            usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
+                        } else {
+                            usedRoleObjective.getScore(damager.getName()).setScore(0);
+                        }
                     }
                 }
             }

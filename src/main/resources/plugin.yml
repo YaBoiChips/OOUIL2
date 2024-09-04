@@ -33,3 +33,6 @@ commands:
   gift:
     description: gifts a life to someone
     usage: /<command> <player>
+  task:
+    description: Check or override your task status.
+    usage: /task <status|override>
