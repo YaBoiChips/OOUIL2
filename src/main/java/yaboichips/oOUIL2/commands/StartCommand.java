@@ -1,9 +1,6 @@
 package yaboichips.oOUIL2.commands;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Server;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -44,33 +41,38 @@ public class StartCommand implements CommandExecutor {
             } else {
                 List<Role> roleList = new ArrayList<>(roles);
                 for (Player player : players) {
-                    if (!roleList.isEmpty()) {
-                        Collections.shuffle(roleList);
-                        Score score = roleObjective.getScore(player.getName());
-                        Role role = roleList.getFirst();
-                        score.setScore(role.getValue());
-                        player.sendMessage("You are The " + role.getName());
-                        roleList.removeFirst();
-                    } else {
-                        Score score = roleObjective.getScore(player.getName());
-                        Role role = TESTIFICATE;
-                        score.setScore(role.getValue());
-                        player.sendMessage("You are The " + role.getName());
+                    if (player.getGameMode() == GameMode.SURVIVAL) {
+                        if (!roleList.isEmpty()) {
+                            Collections.shuffle(roleList);
+                            Score score = roleObjective.getScore(player.getName());
+                            Role role = roleList.getFirst();
+                            score.setScore(role.getValue());
+                            player.sendTitle("You are The " + role.getName(), "good luck :)", 40, 20, 40);
+                            player.playSound(player, Sound.ITEM_TOTEM_USE, 1, 1);
+                            roleList.removeFirst();
+                        } else {
+                            Score score = roleObjective.getScore(player.getName());
+                            Role role = TESTIFICATE;
+                            score.setScore(role.getValue());
+                            player.sendTitle("You are The " + role.getName(), "good luck :)", 40, 20, 40);
+                            player.playSound(player, Sound.ITEM_TOTEM_USE, 1, 1);
+                        }
                     }
                 }
-
             }
             if (voteObjective == null) {
                 voteObjective = scoreboard.registerNewObjective("votes", "dummy", "Votes");
             } else {
                 for (Player player : players) {
-                    Score votes = voteObjective.getScore(player.getName());
-                    if (getRole(player) == MAYOR) {
-                        votes.setScore(2);
-                    } else if (getRole(player) == DETECTIVE) {
-                        votes.setScore(0);
-                    } else {
-                        votes.setScore(1);
+                    if (player.getGameMode() == GameMode.SURVIVAL) {
+                        Score votes = voteObjective.getScore(player.getName());
+                        if (getRole(player) == MAYOR) {
+                            votes.setScore(2);
+                        } else if (getRole(player) == DETECTIVE) {
+                            votes.setScore(0);
+                        } else {
+                            votes.setScore(1);
+                        }
                     }
                 }
             }
@@ -78,28 +80,33 @@ public class StartCommand implements CommandExecutor {
             if (targetScore == null) {
                 targetScore = scoreboard.registerNewObjective("target", "dummy", "Target");
             }
+            for (Player player : players) {
+                if (player.getGameMode() == GameMode.SURVIVAL) {
+                    if (getRole(player) != ASSASSIN) {
+                        targetScore.getScore(player.getName()).setScore(1);
+                        target = player;
+                        break;
+                    }
+                }
+            }
             Objective guardObjective = scoreboard.getObjective("guard");
             if (guardObjective == null) {
                 guardObjective = scoreboard.registerNewObjective("guard", "dummy", "Guard");
             } else {
                 for (Player player : players) {
-                    guardObjective.getScore(player.getName()).setScore(0);
+                    if (player.getGameMode() == GameMode.SURVIVAL) {
+                        guardObjective.getScore(player.getName()).setScore(0);
+                    }
                 }
 
                 for (Player player : players) {
-                    Collections.shuffle(players);
-                    if (getRole(player) != BODYGUARD) {
-                        guardObjective.getScore(player.getName()).setScore(1);
-                        guarded = player;
-                        break;
-                    }
-                }
-                for (Player player : players) {
-                    Collections.shuffle(players);
-                    if (getRole(player) != ASSASSIN) {
-                        targetScore.getScore(player.getName()).setScore(1);
-                        target = player;
-                        break;
+                    if (player.getGameMode() == GameMode.SURVIVAL) {
+                        Collections.shuffle(players);
+                        if (getRole(player) != BODYGUARD) {
+                            guardObjective.getScore(player.getName()).setScore(1);
+                            guarded = player;
+                            break;
+                        }
                     }
                 }
             }
@@ -138,7 +145,7 @@ public class StartCommand implements CommandExecutor {
                         }
                 );
             }
-        }.runTaskLater(OOUIL2.getPlugin(OOUIL2.class), 60 * 60 * 20L);
+        }.runTaskLater(OOUIL2.getPlugin(OOUIL2.class), 120 * 60 * 20L);
         return true;
     }
 

@@ -1,6 +1,7 @@
 package yaboichips.oOUIL2.commands;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -36,6 +37,9 @@ public class GiftCommand implements CommandExecutor {
                     for (Player player : players) {
                         if (player == saved) {
                             Score score = livesObjective.getScore(player.getName());
+                            if (score.getScore() < 1){
+                                commandSender.getServer().dispatchCommand(commandSender.getServer().getConsoleSender(), "gamemode survival " + saved.getName());
+                            }
                             score.setScore(score.getScore() + 1);
                             saved.sendTitle("You have been Gifted a Life by The Angel", "Say Thanks :)", 30, 40, 30);
                             saved.playSound(saved, Sound.ENTITY_PLAYER_LEVELUP, 1, 1);

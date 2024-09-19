@@ -48,6 +48,7 @@ public class TransplantCommand implements CommandExecutor {
                             player.sendMessage("You took a life from " + target.getName() + " and gave it to " + target2.getName());
                             target.sendMessage("A life is being taken from you!");
                             target2.sendMessage("You have gained a life, say thanks to the nurse");
+                            player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1, 0.1f);
                             target.playSound(target, Sound.ITEM_GOAT_HORN_SOUND_2, 1, 1);
                             usedRoleObjective.getScore(sender.getName()).setScore(0);
                         }

@@ -58,7 +58,7 @@ public class TaskCommand implements CommandExecutor {
                 player.sendMessage("Your task status has been set to Complete");
             }
         } else {
-            player.sendMessage("Invalid argument. Usage: /task <status|override>");
+            player.sendMessage("Invalid argument. Usage: /task <status | override>");
         }
 
         return true;

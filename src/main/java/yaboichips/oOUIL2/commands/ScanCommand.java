@@ -37,6 +37,7 @@ public class ScanCommand implements CommandExecutor {
                     // Check if the target player is within 30 blocks
                     if (player.getLocation().distance(target.getLocation()) <= 30) {
                         player.sendMessage("You have scanned " + target.getName() + " and they are The " + OOUIL2.getRole(target).getName());
+                        player.playSound(player, Sound.BLOCK_LEVER_CLICK, 1,1.5f);
                         target.sendMessage("You are being scanned!");
                         target.playSound(target, Sound.ITEM_GOAT_HORN_SOUND_5, 1, 1);
                         usedRoleObjective.getScore(sender.getName()).setScore(0);

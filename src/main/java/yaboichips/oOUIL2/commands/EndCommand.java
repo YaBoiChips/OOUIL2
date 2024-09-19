@@ -1,6 +1,7 @@
 package yaboichips.oOUIL2.commands;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,6 +18,8 @@ public class EndCommand implements CommandExecutor {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
         for (Player player : onlinePlayers) {
+            player.playSound(player, Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, 1, 1f);
+            player.sendTitle("Congratulations", "one session closer...", 20,10,20);
             if (OOUIL2.getRole(player) == Role.LIAR) {
                 Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
                 if (usedRoleObjective == null) {
