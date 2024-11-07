@@ -36,3 +36,9 @@ commands:
   task:
     description: Check or override your task status.
     usage: /task <status|override>
+  track:
+    description: Track other player
+  setlives:
+    description: sets lives
+  recall:
+    description: the recall commmand

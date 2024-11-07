@@ -2,28 +2,24 @@ package yaboichips.oOUIL2;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scoreboard.*;
+
+import static org.bukkit.Bukkit.getLogger;
+
 
 public class PlayerLoginListener implements Listener {
 
     @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent event) {
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        if (manager != null) {
-            Scoreboard scoreboard = manager.getMainScoreboard();
-            Objective livesObjective = scoreboard.getObjective("lives");
-            if (livesObjective != null) {
-                Score score = livesObjective.getScore(event.getPlayer().getName());
-                if (!score.isScoreSet()) {
-                    score.setScore(3);
-                }
-            }
+    public void onPlayerJoin(PlayerLoginEvent event) {
+        Player player = event.getPlayer();
+        if (!player.getPersistentDataContainer().has(Keys.LIVES)) {
+            player.getPersistentDataContainer().set(Keys.LIVES, PersistentDataType.INTEGER, 3);
+            getLogger().info("Set 'lives' metadata to 3 for player: " + event.getPlayer().getName());
         }
     }
 }

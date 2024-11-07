@@ -5,102 +5,76 @@ import java.util.List;
 
 public class Role {
 
-    private int value;
-    private String name;
-    public static Role MAYOR;
-    public static Role DOCTOR;
-    public static Role SEER;
-    public static Role DETECTIVE;
-    public static Role TRAP;
+    public static String MAYOR;
+    public static String DOCTOR;
+    public static String SEER;
+    public static String DETECTIVE;
+    public static String TRAP;
 
     //neutral
-    public static Role SWAPPER;
-    public static Role JURY;
-    public static Role NURSE;
-    public static Role WATCHER;
-    public static Role BODYGUARD;
+    public static String SWAPPER;
+    public static String JURY;
+    public static String NURSE;
+    public static String WATCHER;
+    public static String BODYGUARD;
 
     //bad
-    public static Role TESTIFICATE;
-    public static Role ESPUR;
-    public static Role ACCOMPLICE;
-    public static Role LIAR;
-    public static Role JESTER;
-    public static Role ASSASSIN;
+    public static String TESTIFICATE = "Testificate";
+    public static String ESPUR;
+    public static String ACCOMPLICE;
+    public static String LIAR;
+    public static String JESTER;
+    public static String ASSASSIN;
 
-    public static Role ANGEL;
+    public static String ANGEL;
+    public static String SERIAL_KILLER;
 
-    public static List<Role> roles = new ArrayList<>();
-    public Role(int value, String name) {
-        this.value = value;
-        this.name = name;
+
+    public static List<String> roles = new ArrayList<>();
+
+    public Role() {
     }
-    static {
 
+    static {
         //good
-        MAYOR = createRole(1, "Mayor");
-        DOCTOR = createRole(2, "Doctor");
-        SEER = createRole(3, "Seer");
-        DETECTIVE = createRole(4, "Detective");
-        TRAP = createRole(5, "Trap");
-        ANGEL = createRole(18, "Angel");
+        MAYOR = createRole("Mayor");
+        DOCTOR = createRole("Doctor");
+        SEER = createRole("Seer");
+        DETECTIVE = createRole("Detective");
+        TRAP = createRole("Trap");
+        ANGEL = createRole("Angel");
 
         //neutral
-        SWAPPER = createRole(7, "Swapper");
-        JURY = createRole(8, "Jury");
-        NURSE = createRole(9, "Nurse");
-        WATCHER = createRole(10, "Watcher");
-        BODYGUARD = createRole(11, "Bodyguard");
+        SWAPPER = createRole("Swapper");
+        JURY = createRole("Jury");
+        NURSE = createRole("Nurse");
+        WATCHER = createRole("Watcher");
+        BODYGUARD = createRole("Bodyguard");
 
         //bad
-        TESTIFICATE = createRole(12, "Testificate");
-        ESPUR = createRole(13, "Espur");
-        ACCOMPLICE = createRole(14, "Accomplice");
-        LIAR = createRole(15, "Liar");
-        JESTER = createRole(16, "Jester");
-        ASSASSIN = createRole(17, "Assassin");
+        ESPUR = createRole("Espur");
+        ACCOMPLICE = createRole("Accomplice");
+        LIAR = createRole("Liar");
+        JESTER = createRole("Jester");
+        ASSASSIN = createRole("Assassin");
+        SERIAL_KILLER = createRole("Serial Killer");
     }
 
-    public int getValue() {
-        return value;
+    public static String getRoleByName(String name) {
+        for (String role : roles) {
+            if (role.equals(name)) {
+                return role;
+            }
+        }
+        return null;
     }
 
-    public void setValue(int value) {
-        this.value = value;
-    }
-
-    public String getName() {
+    public static String createRole(String name) {
+        roles.add(name);
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public static Role getRoleByName(String name) {
-        for (Role role : roles) {
-            if (role.getName().equals(name)){
-                return role;
-            }
-        }
-        return null;
-    }
-
-    public static Role getRoleByValue(int value){
-        for (Role role : roles){
-            if (role.getValue() == value){
-                return role;
-            }
-        }
-        return null;
-    }
-
-    public static Role createRole(int value, String name) {
-        Role role = new Role(value, name);
-        roles.add(role);
-        return role;
-    }
-    public static void init(){
+    public static void init() {
         System.out.println("Roles init");
     }
 }

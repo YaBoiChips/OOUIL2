@@ -10,9 +10,13 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
+import yaboichips.oOUIL2.OOUIL2;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static yaboichips.oOUIL2.OOUIL2.setComplete;
+import static yaboichips.oOUIL2.OOUIL2.setUses;
 
 public class TaskCommand implements CommandExecutor {
     @Override
@@ -29,30 +33,17 @@ public class TaskCommand implements CommandExecutor {
             return true;
         }
 
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        Scoreboard board = manager.getMainScoreboard();
-        Objective objective = board.getObjective("usedrole");
 
-        if (objective == null) {
-            player.sendMessage("The scoreboard 'usedrole' does not exist.");
-            return true;
-        }
-
-        Score score = objective.getScore(player.getName());
-        int playerScore = score.getScore();
+        boolean playerScore = OOUIL2.getComplete(player);
         if (args[0].equalsIgnoreCase("status")) {
-            if (playerScore == 0) {
+            if (playerScore) {
                 player.sendMessage("Complete");
             } else {
                 player.sendMessage("Incomplete");
             }
         } else if (args[0].equalsIgnoreCase("override")) {
-            if (score.getScore() > 0) {
-                score.setScore(0);
-            } else {
-                score.setScore(1);
-            }
-            if (playerScore == 0) {
+            setComplete(player, !playerScore);
+            if (!OOUIL2.getComplete(player)) {
                 player.sendMessage("Your task status has been set to Incomplete");
             } else {
                 player.sendMessage("Your task status has been set to Complete");

@@ -1,22 +1,19 @@
 package yaboichips.oOUIL2;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Team;
 import yaboichips.oOUIL2.commands.*;
 import yaboichips.oOUIL2.roles.Role;
 
@@ -25,11 +22,22 @@ import java.util.*;
 public final class OOUIL2 extends JavaPlugin implements Listener {
 
     private final Set<UUID> frozenPlayers = new HashSet<>();
+    public static Team MAYOR_TEAM;
+
 
     @Override
     public void onEnable() {
         Role.init();
         getServer().getPluginManager().registerEvents(this, this);
+        Scoreboard scoreboard = getServer().getScoreboardManager().getMainScoreboard();
+        if (scoreboard.getTeam("mayor") != null) {
+            scoreboard.getTeam("mayor").unregister();
+        }
+
+
+        if (MAYOR_TEAM == null) {
+            MAYOR_TEAM = scoreboard.registerNewTeam("mayor");
+        }
 
         this.getCommand("start").setExecutor(new StartCommand());
         this.getCommand("vote").setTabCompleter(new VoteCommand.VoteTabCompleter());
@@ -41,126 +49,182 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
         this.getCommand("scan").setExecutor(new ScanCommand());
         this.getCommand("transplant").setExecutor(new TransplantCommand());
         this.getCommand("checklives").setExecutor(new CheckLivesCommand());
+        this.getCommand("setlives").setExecutor(new SetLivesCommand());
         this.getCommand("gift").setExecutor(new GiftCommand());
         this.getCommand("task").setTabCompleter(new TaskTabCompleter());
         this.getCommand("task").setExecutor(new TaskCommand());
+        this.getCommand("recall").setExecutor(new RecallCommand());
+        this.getCommand("track").setExecutor(new TrackCommand(this));
 
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        if (manager != null) {
-            Scoreboard scoreboard = manager.getMainScoreboard();
-            Objective livesObjective = scoreboard.getObjective("lives");
-            if (livesObjective == null) {
-                livesObjective = scoreboard.registerNewObjective("lives", "dummy", "Lives");
-                Objective savedObjective = scoreboard.getObjective("saved");
-                if (savedObjective == null) {
-                    savedObjective = scoreboard.registerNewObjective("saved", "dummy", "Saved");
-                }
-                Objective voteObjective = scoreboard.getObjective("votes");
-                if (voteObjective == null) {
-                    voteObjective = scoreboard.registerNewObjective("votes", "dummy", "Votes");
-                }
-                Objective roleObjective = scoreboard.getObjective("role");
-                if (roleObjective == null) {
-                    roleObjective = scoreboard.registerNewObjective("role", "dummy", "Role");
-                }
-                Objective target = scoreboard.getObjective("target");
-                if (target == null) {
-                    target = scoreboard.registerNewObjective("target", "dummy", "Target");
-                }
-            }
-        }
         getServer().getPluginManager().registerEvents(new PlayerLoginListener(), this);
     }
 
+
     @Override
     public void onDisable() {
-
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        Objects.requireNonNull(scoreboard.getTeam("mayor")).unregister();
     }
 
-    public static Role getRole(Player player) {
-        Objective roleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("role");
-        Score score = roleObjective.getScore(player.getName());
-        return Role.getRoleByValue(score.getScore());
+    public static String getRole(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.ROLE)) {
+            return player.getPersistentDataContainer().get(Keys.ROLE, PersistentDataType.STRING);
+        }
+        return Role.TESTIFICATE;
+    }
+
+    public static void setRole(Player player, String roleList) {
+        player.getPersistentDataContainer().set(Keys.ROLE, PersistentDataType.STRING, roleList);
+    }
+
+    public static void setLives(Player player, int i) {
+        player.getPersistentDataContainer().set(Keys.LIVES, PersistentDataType.INTEGER, i);
+    }
+
+    public static int getLives(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.LIVES)) {
+            return player.getPersistentDataContainer().get(Keys.LIVES, PersistentDataType.INTEGER);
+        }
+        return 0;
+    }
+
+    public static void setVotes(Player player, int i) {
+        player.getPersistentDataContainer().set(Keys.VOTES, PersistentDataType.INTEGER, i);
+    }
+
+    public static int getVotes(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.VOTES)) {
+            return player.getPersistentDataContainer().get(Keys.VOTES, PersistentDataType.INTEGER);
+        }
+        return 0;
+    }
+
+    public static void setVoteCount(Player player, int i) {
+        player.getPersistentDataContainer().set(Keys.VOTES_FOR, PersistentDataType.INTEGER, i);
+    }
+
+    public static int getVoteCount(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.VOTES_FOR)) {
+            return player.getPersistentDataContainer().get(Keys.VOTES_FOR, PersistentDataType.INTEGER);
+        }
+        return 0;
+    }
+
+    public static void setUses(Player player, int i) {
+        player.getPersistentDataContainer().set(Keys.USES, PersistentDataType.INTEGER, i);
+    }
+
+    public static int getUses(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.USES)) {
+            return player.getPersistentDataContainer().get(Keys.USES, PersistentDataType.INTEGER);
+        }
+        return 0;
+    }
+
+    public static void setSaved(Player player, boolean i) {
+        player.getPersistentDataContainer().set(Keys.SAVED, PersistentDataType.BOOLEAN, i);
+    }
+
+    public static boolean getSaved(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.SAVED)) {
+            return player.getPersistentDataContainer().get(Keys.SAVED, PersistentDataType.BOOLEAN);
+        }
+        return false;
+    }
+
+    public static void setComplete(Player player, boolean i) {
+        player.getPersistentDataContainer().set(Keys.COMPLETE, PersistentDataType.BOOLEAN, i);
+    }
+
+    public static boolean getComplete(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.COMPLETE)) {
+            return player.getPersistentDataContainer().get(Keys.COMPLETE, PersistentDataType.BOOLEAN);
+        }
+        return false;
+    }
+
+    public static void setGuarded(Player player, boolean i) {
+        player.getPersistentDataContainer().set(Keys.GUARDED, PersistentDataType.BOOLEAN, i);
+    }
+
+    public static boolean getGuarded(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.GUARDED)) {
+            return player.getPersistentDataContainer().get(Keys.GUARDED, PersistentDataType.BOOLEAN);
+        }
+        return false;
+    }
+
+    public static void setTarget(Player player, boolean i) {
+        player.getPersistentDataContainer().set(Keys.TARGET, PersistentDataType.BOOLEAN, i);
+    }
+
+    public static boolean getTarget(Player player) {
+        if (player.getPersistentDataContainer().has(Keys.TARGET)) {
+            return player.getPersistentDataContainer().get(Keys.TARGET, PersistentDataType.BOOLEAN);
+        }
+        return false;
     }
 
     @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        Player killed = event.getPlayer();
+        System.out.println(killed.getName() + " Respawned");
+        killed.kickPlayer(killed.getName());
+    }
+
+
+    @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
-        for (Player player : onlinePlayers) {
-            if (getRole(player) == Role.SEER) {
-                player.sendMessage("Someone has perished!");
-                player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1, 1);
-            }
-        }
         Player killed = event.getEntity();
         Player killer = killed.getKiller();
+        for (Player playerz : onlinePlayers) {
+            if (getRole(playerz).equals(Role.SEER)) {
+                playerz.sendMessage(killed.getName() + " has perished at " + killed.getLastDeathLocation().getX() + ", " + killed.getLastDeathLocation().getZ());
+                playerz.playSound(playerz.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1, 1);
+            }
+        }
 
         if (killer != null && getRole(killed) == Role.TRAP) {
             freezePlayer(killer);
         }
 
-        Player player = event.getEntity();
-        Objective savedObjective = scoreboard.getObjective("saved");
-        if (savedObjective == null) {
-            savedObjective = scoreboard.registerNewObjective("saved", "dummy", "Saved");
+        if (killer != null && OOUIL2.getRole(killer) == Role.SERIAL_KILLER) {
+            setUses(killer, getUses(killer) - 1);
         }
 
-        if (OOUIL2.getRole(player) == Role.LIAR) {
-            Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-            if (usedRoleObjective == null) {
-                usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-            } else {
-                usedRoleObjective.getScore(player.getName()).setScore(0);
-                for (Player playerz : onlinePlayers) {
-                    if (OOUIL2.getRole(playerz) == Role.ACCOMPLICE) {
-                        usedRoleObjective.getScore(playerz.getName()).setScore(0);
+        if (killer != null && OOUIL2.getRole(killer) == Role.LIAR) {
+            setComplete(killer, true);
+            for (Player playerz : onlinePlayers) {
+                if (OOUIL2.getRole(playerz) == Role.ACCOMPLICE) {
+                    setComplete(playerz, true);
+                }
+            }
+        }
+        if (killer != null && OOUIL2.getRole(killer) == Role.ASSASSIN) {
+            if (killed == StartCommand.target) {
+                setComplete(killer, true);
+            }
+        }
+
+        if (!getSaved(killed)) {
+            setLives(killed, getLives(killed) - 1);
+        } else {
+            setSaved(killed, false);
+        }
+        for (Player playerz : onlinePlayers) {
+            if (getGuarded(killed)) {
+                for (Player guard : onlinePlayers) {
+                    if (getRole(guard) == Role.BODYGUARD) {
+                        setGuarded(playerz, false);
+                        guard.setHealth(0);
                     }
                 }
             }
         }
-        if (OOUIL2.getRole(player) == Role.ASSASSIN) {
-            Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-            if (usedRoleObjective == null) {
-                usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-            } else {
-                if (killed == StartCommand.target) {
-                    usedRoleObjective.getScore(player.getName()).setScore(0);
-                }
-            }
-        }
-
-        Objective livesObjective = scoreboard.getObjective("lives");
-        Score lives = livesObjective.getScore(player.getName());
-        Score savedScore = savedObjective.getScore(player.getName());
-        if (savedScore.getScore() != 1) {
-            lives.setScore(lives.getScore() - 1);
-        } else {
-            savedScore.setScore(0);
-        }
-        Objective guardObjective = scoreboard.getObjective("guard");
-        if (guardObjective == null) {
-            guardObjective = scoreboard.registerNewObjective("guard", "dummy", "Guard");
-        } else {
-            for (Player playerz : onlinePlayers) {
-                if (guardObjective.getScore(playerz.getName()).getScore() == 1) {
-                    for (Player guard : onlinePlayers) {
-                        if (getRole(guard) == Role.BODYGUARD) {
-                            guard.damage(50);
-                            guardObjective.getScore(playerz.getName()).setScore(0);
-                        }
-                    }
-                }
-            }
-            for (Player playerz : onlinePlayers) {
-                guardObjective.getScore(playerz.getName()).setScore(0);
-
-            }
-        }
-
-        if (lives.getScore() <= 0) {
-            player.setGameMode(GameMode.SPECTATOR);
-            player.sendTitle("YOU HAVE PERISHED!", "Better luck next season ;)", 30, 60, 30);
+        if (getLives(killed) <= 0) {
+            killed.setGameMode(GameMode.SPECTATOR);
+            killed.sendTitle("YOU HAVE PERISHED!", "Better luck next season ;)", 30, 60, 30);
         }
     }
 
@@ -190,20 +254,6 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        if (event.getRightClicked() instanceof Player clicked) {
-            Player player = event.getPlayer();
-            Material type = player.getInventory().getItemInMainHand().getType();
-            if (type == Material.SPYGLASS) {
-                player.sendMessage(clicked.getName() + " is The " + getRole(clicked).getName());
-                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                player.getInventory().remove(type);
-                clicked.sendMessage("You've been detected");
-            }
-        }
-    }
-
-    @EventHandler
     public void onPlayerHit(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player damager && event.getEntity() instanceof Player target) {
             ItemStack weapon = damager.getInventory().getItemInMainHand();
@@ -213,12 +263,7 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
                     if (meta != null && meta.hasDisplayName() && meta.getDisplayName().equals("Espur Blade")) {
                         scheduleDeath(target);
                         damager.getInventory().remove(weapon);
-                        Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                        if (usedRoleObjective == null) {
-                            usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                        } else {
-                            usedRoleObjective.getScore(damager.getName()).setScore(0);
-                        }
+                        setComplete(damager, true);
                     }
                 }
             }

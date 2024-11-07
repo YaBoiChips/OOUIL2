@@ -5,11 +5,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
+import yaboichips.oOUIL2.Keys;
 import yaboichips.oOUIL2.OOUIL2;
 import yaboichips.oOUIL2.roles.Role;
 
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static yaboichips.oOUIL2.OOUIL2.getRole;
+import static yaboichips.oOUIL2.OOUIL2.*;
 import static yaboichips.oOUIL2.roles.Role.*;
 
 public class StartCommand implements CommandExecutor {
@@ -30,83 +30,61 @@ public class StartCommand implements CommandExecutor {
         init();
     }
 
-    public static void assignPlayers(List<Player> players) {
+    public void assignPlayers(List<Player> players) {
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         if (manager != null) {
-            Scoreboard scoreboard = manager.getMainScoreboard();
-            Objective roleObjective = scoreboard.getObjective("role");
-            Objective voteObjective = scoreboard.getObjective("votes");
-            if (roleObjective == null) {
-                roleObjective = scoreboard.registerNewObjective("role", "dummy", "Role");
-            } else {
-                List<Role> roleList = new ArrayList<>(roles);
-                for (Player player : players) {
-                    if (player.getGameMode() == GameMode.SURVIVAL) {
-                        if (!roleList.isEmpty()) {
-                            Collections.shuffle(roleList);
-                            Score score = roleObjective.getScore(player.getName());
-                            Role role = roleList.getFirst();
-                            score.setScore(role.getValue());
-                            player.sendTitle("You are The " + role.getName(), "good luck :)", 40, 20, 40);
-                            player.playSound(player, Sound.ITEM_TOTEM_USE, 1, 1);
-                            roleList.removeFirst();
-                        } else {
-                            Score score = roleObjective.getScore(player.getName());
-                            Role role = TESTIFICATE;
-                            score.setScore(role.getValue());
-                            player.sendTitle("You are The " + role.getName(), "good luck :)", 40, 20, 40);
-                            player.playSound(player, Sound.ITEM_TOTEM_USE, 1, 1);
-                        }
+            List<String> roleList = new ArrayList<>(roles);
+            for (Player player : players) {
+                if (Boolean.TRUE.equals(player.getPersistentDataContainer().get(Keys.TARGET, PersistentDataType.BOOLEAN))) {
+                    player.getPersistentDataContainer().set(Keys.TARGET, PersistentDataType.BOOLEAN, false);
+                }
+                if (Boolean.TRUE.equals(player.getPersistentDataContainer().get(Keys.GUARDED, PersistentDataType.BOOLEAN))) {
+                    player.getPersistentDataContainer().set(Keys.GUARDED, PersistentDataType.BOOLEAN, false);
+                }
+                if (OOUIL2.getRole(player) == Role.MAYOR) {
+                    MAYOR_TEAM.removeEntry(player.getName());
+                }
+                setComplete(player, false);
+                if (player.getGameMode() == GameMode.SURVIVAL) {
+                    if (!roleList.isEmpty()) {
+                        Collections.shuffle(roleList);
+                        String role = roleList.getFirst();
+                        setRole(player, role);
+                        player.sendTitle("You are The " + role, "good luck :)", 40, 20, 40);
+                        player.playSound(player, Sound.ITEM_TOTEM_USE, 1, 1);
+                        roleList.removeFirst();
                     }
                 }
-            }
-            if (voteObjective == null) {
-                voteObjective = scoreboard.registerNewObjective("votes", "dummy", "Votes");
-            } else {
-                for (Player player : players) {
-                    if (player.getGameMode() == GameMode.SURVIVAL) {
-                        Score votes = voteObjective.getScore(player.getName());
-                        if (getRole(player) == MAYOR) {
-                            votes.setScore(2);
-                        } else if (getRole(player) == DETECTIVE) {
-                            votes.setScore(0);
-                        } else {
-                            votes.setScore(1);
-                        }
-                    }
-                }
-            }
-            Objective targetScore = scoreboard.getObjective("target");
-            if (targetScore == null) {
-                targetScore = scoreboard.registerNewObjective("target", "dummy", "Target");
             }
             for (Player player : players) {
                 if (player.getGameMode() == GameMode.SURVIVAL) {
-                    if (getRole(player) != ASSASSIN) {
-                        targetScore.getScore(player.getName()).setScore(1);
+                    if (getRole(player).equals(MAYOR)) {
+                        setVotes(player, 2);
+                    } else if (getRole(player).equals(DETECTIVE)) {
+                        setVotes(player, 0);
+                    } else {
+                        setVotes(player, 1);
+                    }
+                }
+            }
+            for (Player player : players) {
+                Collections.shuffle(players);
+                if (player.getGameMode() == GameMode.SURVIVAL) {
+                    if (!getRole(player).equals(ASSASSIN)) {
+                        player.getPersistentDataContainer().set(Keys.TARGET, PersistentDataType.BOOLEAN, true);
                         target = player;
                         break;
                     }
                 }
             }
-            Objective guardObjective = scoreboard.getObjective("guard");
-            if (guardObjective == null) {
-                guardObjective = scoreboard.registerNewObjective("guard", "dummy", "Guard");
-            } else {
-                for (Player player : players) {
-                    if (player.getGameMode() == GameMode.SURVIVAL) {
-                        guardObjective.getScore(player.getName()).setScore(0);
-                    }
-                }
 
-                for (Player player : players) {
-                    if (player.getGameMode() == GameMode.SURVIVAL) {
-                        Collections.shuffle(players);
-                        if (getRole(player) != BODYGUARD) {
-                            guardObjective.getScore(player.getName()).setScore(1);
-                            guarded = player;
-                            break;
-                        }
+            for (Player player : players) {
+                if (player.getGameMode() == GameMode.SURVIVAL) {
+                    Collections.shuffle(players);
+                    if (getRole(player) != BODYGUARD) {
+                        setGuarded(player, true);
+                        guarded = player;
+                        break;
                     }
                 }
             }
@@ -114,25 +92,25 @@ public class StartCommand implements CommandExecutor {
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        EndCommand.unregister();
 
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
         Collections.shuffle(onlinePlayers);
         assignPlayers(onlinePlayers);
 
-        Objective usedRoleObjective = scoreboard.getObjective("usedrole");
-        if (usedRoleObjective == null) {
-            usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-        }
+
         for (Player player : onlinePlayers) {
             player.getInventory().remove(Material.WRITTEN_BOOK);
-            Score used = usedRoleObjective.getScore(player.getName());
             if (getRole(player) == SWAPPER) {
-                used.setScore(3);
+                setUses(player, 3);
             } else if (getRole(player) == JESTER) {
-                used.setScore(3);
+                setUses(player, 3);
+            } else if (getRole(player) == JURY) {
+                setUses(player, 3);
+            } else if (getRole(player) == SERIAL_KILLER) {
+                setUses(player, 3);
             } else {
-                used.setScore(1);
+                setUses(player, 1);
             }
             giveItems(player);
         }
@@ -149,11 +127,27 @@ public class StartCommand implements CommandExecutor {
         return true;
     }
 
+    public static void setPlayerNametagPurple(Player player) {
+        MAYOR_TEAM.setColor(ChatColor.DARK_PURPLE); // Set the team's color to purple
+
+        // Add the player to the team to apply the color to their nametag
+        MAYOR_TEAM.addEntry(player.getName());
+    }
+
     public void giveItems(Player player) {
-        Role role = getRole(player);
+        String role = getRole(player);
         Server server = player.getServer();
+        boolean isLiarPresent = false;
         Player liar = null;
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (getRole(onlinePlayer) == LIAR) {
+                isLiarPresent = true;
+                liar = onlinePlayer;
+                break;
+            }
+        }
         if (role == Role.MAYOR) {
+            setPlayerNametagPurple(player);
             server.dispatchCommand(server.getConsoleSender(),
                     "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Mayor!\\\\n\\\\nYou get to vote TWICE! (We love democracy)\\\\n\\\\nDon\\\\\\'t let the power go to your head ;)\"]]'],title:\"Role\",author:NOMAD}]");
         }
@@ -164,28 +158,22 @@ public class StartCommand implements CommandExecutor {
                     "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Espur!\\\\n\\\\nYou MUST kill someone by the end of the session or YOU die,\\\\n\\\\nBut you\\\\\\'ve made off easier than the liar. The sword given to you will dissapear on hit and kill your target after 15 minutes\\\\n\\\\nGood Luck :)\"]]'],title:Role,author:NOMAD}]");
         }
         if (role == LIAR) {
-            liar = player;
             server.dispatchCommand(server.getConsoleSender(),
                     "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Liar!\\\\n\\\\nYou MUST kill someone by the end of the session or YOU die\\\\n\\\\nGood Luck :)\"]]'],title:Role,author:NOMAD}]");
         }
         if (role == ACCOMPLICE) {
-            if (liar != null) {
+            if (isLiarPresent) {
                 server.dispatchCommand(server.getConsoleSender(),
                         "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Accomplice!\\\\n\\\\nYou MUST ensure The Liar has made a kill by the end of the session, or you will die with him. The Liar is " + liar.getName() + " \\\\n\\\\nGood Luck :)\"]]'],title:Role,author:NOMAD}]");
             } else {
                 server.dispatchCommand(server.getConsoleSender(),
                         "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Accomplice!\\\\n\\\\nAnd there is no Liar, yipeeeeee a care free day\\\\n\\\\nbetter not die ;)\"]]'],title:Role,author:NOMAD}]");
-                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                if (usedRoleObjective == null) {
-                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else {
-                    usedRoleObjective.getScore(player.getName()).setScore(0);
-                }
+                setComplete(player, true);
             }
         }
         if (role == WATCHER) {
             server.dispatchCommand(server.getConsoleSender(),
-                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Watcher\\\\n\\\\nYou get to teleport to someone in spectator mode for 15 seconds and see what you can find out about them\\\\n\\\\n/watch <player>\"]]'],title:Role,author:NOMAD}]");
+                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Watcher!\\\\n\\\\nYou get to teleport to someone in spectator mode for 15 seconds and see what you can find out about them!\\\\n/Watch <player>\\\\nYou can also recall with a 10 min cooldown\\\\n/recall set\\\\n/recall\"]]'],title:Role,author:NOMAD}]");
         }
         if (role == BODYGUARD) {
             if (guarded != null) {
@@ -204,12 +192,7 @@ public class StartCommand implements CommandExecutor {
             } else {
                 server.dispatchCommand(server.getConsoleSender(),
                         "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Assassin!\\\\n\\\\nAnd there is no Target, you should never see this msg but if you do, yipeeeeee a care free day\\\\n\\\\nbetter not die ;)\"]]'],title:Role,author:NOMAD}]");
-                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                if (usedRoleObjective == null) {
-                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else {
-                    usedRoleObjective.getScore(player.getName()).setScore(0);
-                }
+                setComplete(player, true);
             }
         }
         if (role == DETECTIVE) {
@@ -222,7 +205,7 @@ public class StartCommand implements CommandExecutor {
         }
         if (role == SEER) {
             server.dispatchCommand(server.getConsoleSender(),
-                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Seer\\\\n\\\\nYou have the weight on your shoulders to know that someone has died. You don\\\\\\'t know who but you will know when it happens\\\\n\\\\nIsn\\\\\\'t that fun ;)\"]]'],title:Role,author:NOMAD}]");
+                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Seer\\\\n\\\\nYou have the weight on your shoulders to know that someone has died. you know who and where but don't spill how you know!\"]]'],title:Role,author:NOMAD}]");
         }
         if (role == SWAPPER) {
             server.dispatchCommand(server.getConsoleSender(),
@@ -234,11 +217,11 @@ public class StartCommand implements CommandExecutor {
         }
         if (role == TRAP) {
             server.dispatchCommand(server.getConsoleSender(),
-                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Trap\\\\n\\\\nIf you die the person who kills you will be stuck in place for a minuite.\\\\n\\\\nTry to get them in a sticky situation!\\\\n\\\\n:)\"]]'],title:Role,author:NOMAD}]");
+                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Trap\\\\n\\\\nIf you die the person who kills you will be stuck in place for a minute.\\\\n\\\\nTry to get them in a sticky situation!\\\\n\\\\n:)\"]]'],title:Role,author:NOMAD}]");
         }
         if (role == JURY) {
             server.dispatchCommand(server.getConsoleSender(),
-                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Jury\\\\n\\\\nPretty simple you can see all the votes that are made. Use that to your advantage and manipulate the votes to how YOU want. Just like a REAL democracy\\\\n\\\\n:)\"]]'],title:Role,author:NOMAD}]");
+                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Jury\\\\n\\\\nPretty simple you can see all the votes that are made. Use that to your advantage and manipulate the votes to how YOU want. Just like a REAL democracy... Also you can /scan 3 times to see if someone is guilty or innocent\\\\n\\\\n:)\"]]'],title:Role,author:NOMAD}]");
         }
         if (role == NURSE) {
             server.dispatchCommand(server.getConsoleSender(),
@@ -247,6 +230,10 @@ public class StartCommand implements CommandExecutor {
         if (role == ANGEL) {
             server.dispatchCommand(server.getConsoleSender(),
                     "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Angel\\\\n\\\\nYou can use /gift to give a life to anyone but yourself. Use this however you see fit. Bargain, get favors done. But be warned people can still vote you out\\\\n\\\\n:)\"]]'],title:Role,author:NOMAD}]");
+        }
+        if (role == SERIAL_KILLER) {
+            server.dispatchCommand(server.getConsoleSender(),
+                    "give " + player.getName() + " written_book[written_book_content={pages:['[[\"You are The Serial Killer!\\\\n\\\\nYou have to kill 3 people... Have fun with it...\\\\n\\\\n\",{\"text\":\"FOR ME\",\"color\":\"dark_red\"}]]'],title:Role,author:NOMAD}]");
         }
     }
 }

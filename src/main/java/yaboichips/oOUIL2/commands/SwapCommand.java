@@ -11,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Objective;
 import yaboichips.oOUIL2.OOUIL2;
 
+import static yaboichips.oOUIL2.OOUIL2.*;
 import static yaboichips.oOUIL2.roles.Role.SWAPPER;
 
 public class SwapCommand implements CommandExecutor {
@@ -18,11 +19,7 @@ public class SwapCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         if (sender instanceof Player player) {
             if (OOUIL2.getRole(player) == SWAPPER) {
-                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                if (usedRoleObjective == null) {
-                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                }
-                if (usedRoleObjective.getScore(sender.getName()).getScore() >= 1) {
+                if (getUses(player) >= 1) {
                     if (command.getName().equalsIgnoreCase("swap")) {
                         if (args.length != 2) {
                             sender.sendMessage("Usage: /swap <player1> <player2>");
@@ -36,12 +33,12 @@ public class SwapCommand implements CommandExecutor {
                             sender.sendMessage("Both players must be online.");
                         } else {
                             startCountdown(sender, player1, player2);
-                            usedRoleObjective.getScore(sender.getName()).setScore(usedRoleObjective.getScore(sender.getName()).getScore() - 1);
+                            setUses(player, getUses(player) - 1);
                         }
                         return true;
                     }
                 } else {
-                    sender.sendMessage("This command can only be used once.");
+                    sender.sendMessage("You are out of uses for this command.");
                 }
             } else {
                 sender.sendMessage("This command can only be used by The Swapper.");

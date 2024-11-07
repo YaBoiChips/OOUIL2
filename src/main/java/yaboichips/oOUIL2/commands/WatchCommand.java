@@ -13,21 +13,20 @@ import org.bukkit.scoreboard.Objective;
 import yaboichips.oOUIL2.OOUIL2;
 import yaboichips.oOUIL2.roles.Role;
 
+import static yaboichips.oOUIL2.OOUIL2.getUses;
+import static yaboichips.oOUIL2.OOUIL2.setUses;
+
 public class WatchCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
             if (OOUIL2.getRole(player) == Role.WATCHER) {
-                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                if (usedRoleObjective == null) {
-                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                }
-                if (usedRoleObjective.getScore(sender.getName()).getScore() == 1) {
+                if (getUses(player) == 1) {
                     if (args.length == 1) {
                         Player target = Bukkit.getPlayer(args[0]);
                         if (target != null && target.isOnline()) {
                             watchPlayer(player, target);
-                            usedRoleObjective.getScore(sender.getName()).setScore(0);
+                            setUses(player, getUses(player) - 1);
                             return true;
                         } else {
                             player.sendMessage("The specified player is not online.");

@@ -6,12 +6,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Objective;
 import yaboichips.oOUIL2.OOUIL2;
 import yaboichips.oOUIL2.roles.Role;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static yaboichips.oOUIL2.OOUIL2.*;
 
 public class EndCommand implements CommandExecutor {
     @Override
@@ -19,42 +20,50 @@ public class EndCommand implements CommandExecutor {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
         for (Player player : onlinePlayers) {
             player.playSound(player, Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, 1, 1f);
-            player.sendTitle("Congratulations", "one session closer...", 20,10,20);
+            player.sendTitle("Congratulations", "one session closer...", 20, 10, 20);
             if (OOUIL2.getRole(player) == Role.LIAR) {
-                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                if (usedRoleObjective == null) {
-                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else if (usedRoleObjective.getScore(player.getName()).getScore() > 0) {
-                    player.setHealth(0);
+                if (!getComplete(player)) {
                     for (Player playerz : onlinePlayers) {
                         if (OOUIL2.getRole(playerz) == Role.ACCOMPLICE) {
                             playerz.setHealth(0);
                         }
                     }
-                }
-            } else if (OOUIL2.getRole(player) == Role.ASSASSIN) {
-                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                if (usedRoleObjective == null) {
-                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else if (usedRoleObjective.getScore(player.getName()).getScore() > 0) {
-                    player.setHealth(0);
-                }
-            } else if (OOUIL2.getRole(player) == Role.JESTER) {
-                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                if (usedRoleObjective == null) {
-                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else if (usedRoleObjective.getScore(player.getName()).getScore() > 0) {
-                    player.setHealth(0);
-                }
-            } else if (OOUIL2.getRole(player) == Role.ESPUR) {
-                Objective usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("usedrole");
-                if (usedRoleObjective == null) {
-                    usedRoleObjective = Bukkit.getScoreboardManager().getMainScoreboard().registerNewObjective("usedrole", "dummy", "Used Role");
-                } else if (usedRoleObjective.getScore(player.getName()).getScore() > 0) {
                     player.setHealth(0);
                 }
             }
+            if (OOUIL2.getRole(player) == Role.ASSASSIN) {
+                if (!getComplete(player)) {
+                    player.setHealth(0);
+                }
+            }
+            if (OOUIL2.getRole(player) == Role.JESTER) {
+                if (getUses(player) > 0) {
+                    player.setHealth(0);
+                }
+            }
+            if (OOUIL2.getRole(player) == Role.ESPUR) {
+                if (!getComplete(player)) {
+                    player.setHealth(0);
+                }
+            }
+            if (OOUIL2.getRole(player) == Role.SERIAL_KILLER) {
+                if (getUses(player) > 0) {
+                    player.setHealth(0);
+                }
+            }
+            if (OOUIL2.getRole(player) == Role.MAYOR) {
+                MAYOR_TEAM.removeEntry(player.getName());
+            }
+            setRole(player, Role.TESTIFICATE);
         }
+        unregister();
         return true;
     }
+
+    public static void unregister() {
+        StartCommand.target = null;
+        StartCommand.guarded = null;
+        TrackCommand.trackUsage.clear();
+    }
 }
+
