@@ -55,6 +55,9 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
         this.getCommand("task").setExecutor(new TaskCommand());
         this.getCommand("recall").setExecutor(new RecallCommand());
         this.getCommand("track").setExecutor(new TrackCommand(this));
+        this.getCommand("getrole").setExecutor(new GetRoleCommand());
+        this.getCommand("setrole").setExecutor(new SetRoleCommand());
+        this.getCommand("setrole").setTabCompleter(new SetRoleCommand.SetRoleTabCompleter());
 
         getServer().getPluginManager().registerEvents(new PlayerLoginListener(), this);
     }
@@ -73,8 +76,8 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
         return Role.TESTIFICATE;
     }
 
-    public static void setRole(Player player, String roleList) {
-        player.getPersistentDataContainer().set(Keys.ROLE, PersistentDataType.STRING, roleList);
+    public static void setRole(Player player, String role) {
+        player.getPersistentDataContainer().set(Keys.ROLE, PersistentDataType.STRING, role);
     }
 
     public static void setLives(Player player, int i) {
@@ -186,11 +189,13 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
         }
 
         if (killer != null && getRole(killed) == Role.TRAP) {
-            freezePlayer(killer);
+            System.out.println(killer.getName() + " Died to The Trap");
+            killer.damage(50);
         }
 
         if (killer != null && OOUIL2.getRole(killer) == Role.SERIAL_KILLER) {
             setUses(killer, getUses(killer) - 1);
+            System.out.println(killer.getName() + "Got a Serial Killer Kill and needs " + getUses(killer) + " more");
         }
 
         if (killer != null && OOUIL2.getRole(killer) == Role.LIAR) {
@@ -226,31 +231,6 @@ public final class OOUIL2 extends JavaPlugin implements Listener {
             killed.setGameMode(GameMode.SPECTATOR);
             killed.sendTitle("YOU HAVE PERISHED!", "Better luck next season ;)", 30, 60, 30);
         }
-    }
-
-    private void freezePlayer(Player player) {
-        frozenPlayers.add(player.getUniqueId());
-        Location freezeLocation = player.getLocation();
-        player.sendMessage("You are frozen in place for 1 minute!");
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                frozenPlayers.remove(player.getUniqueId());
-                player.sendMessage("You are no longer frozen!");
-            }
-        }.runTaskLater(this, 60 * 20L); // 1 minute * 60 seconds * 20 ticks per second
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (frozenPlayers.contains(player.getUniqueId())) {
-                    player.teleport(freezeLocation);
-                } else {
-                    this.cancel();
-                }
-            }
-        }.runTaskTimer(this, 0L, 1L); // Repeat every tick
     }
 
     @EventHandler

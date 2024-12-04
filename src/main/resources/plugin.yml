@@ -42,3 +42,7 @@ commands:
     description: sets lives
   recall:
     description: the recall commmand
+  setrole:
+    description: Sets the role of the player
+  getrole:
+    description: Gets the role of the player

@@ -134,7 +134,7 @@ public class StartCommand implements CommandExecutor {
         MAYOR_TEAM.addEntry(player.getName());
     }
 
-    public void giveItems(Player player) {
+    public static void giveItems(Player player) {
         String role = getRole(player);
         Server server = player.getServer();
         boolean isLiarPresent = false;
